@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DevArena</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Osnovni stilovi za bolji izgled */
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header, footer {
+      background-color: #1f1f1f;
+      padding: 1em;
+      text-align: center;
+    }
+    nav a {
+      color: #80c0ff;
+      margin: 0 10px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    nav a:hover, nav a:focus {
+      text-decoration: underline;
+      outline: none;
+    }
+    main {
+      flex: 1;
+      padding: 1em 2em;
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #222;
+      border-radius: 8px;
+    }
+    section {
+      outline: none;
+    }
+    button {
+      background-color: #0288d1;
+      color: white;
+      border: none;
+      padding: 0.5em 1em;
+      margin: 0.3em;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s ease;
+    }
+    button:hover, button:focus {
+      background-color: #039be5;
+      outline: none;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 0.5em;
+      margin-top: 0.3em;
+      margin-bottom: 1em;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background-color: #333;
+      color: #eee;
+      font-family: monospace;
+      font-size: 1em;
+      resize: vertical;
+    }
+    #code-editor {
+      height: 150px;
+      font-family: monospace;
+      font-size: 1em;
+    }
+    progress {
+      width: 100%;
+      height: 1.5em;
+      margin-top: 0.3em;
+      margin-bottom: 1em;
+    }
+    /* Learn section styles */
+    #lesson-content {
+      background-color: #2a2a2a;
+      border-radius: 6px;
+      padding: 1em;
+      max-height: 300px;
+      overflow-y: auto;
+      line-height: 1.5em;
+      font-size: 1.1em;
+    }
+    #test-section {
+      margin-top: 1em;
+      background-color: #1a1a1a;
+      border-radius: 6px;
+      padding: 1em;
+    }
+    #test-questions p {
+      margin: 0.5em 0;
+    }
+    label {
+      display: block;
+      margin: 0.3em 0;
+      cursor: pointer;
+    }
+    /* Responsive */
+    @media (max-width: 600px) {
+      main {
+        padding: 1em;
+      }
+      nav a {
+        display: block;
+        margin: 0.5em 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="auth-section" role="region" aria-label="Authentication Section" tabindex="0">
+    <h1>🔐 Welcome to DevArena</h1>
+    <input 
+      type="text" 
+      id="username" 
+      placeholder="Username" 
+      aria-label="Enter your username" 
+      autocomplete="username"
+      required
+    />
+    <div>
+      <button onclick="login()" aria-label="Login button" type="button">Login</button>
+      <button onclick="register()" aria-label="Register button" type="button">Register</button>
+    </div>
+  </div>
+
+  <div id="app" style="display:none;">
+    <header>
+      <h1>⚔️ DevArena</h1>
+      <nav aria-label="Primary Navigation">
+        <a href="#" onclick="showSection('dashboard'); return false;" role="button" tabindex="0">Dashboard</a>
+        <a href="#" onclick="showSection('battle'); return false;" role="button" tabindex="0">Battle</a>
+        <a href="#" onclick="showSection('leaderboard'); return false;" role="button" tabindex="0">Leaderboard</a>
+        <a href="#" onclick="showSection('rooms'); return false;" role="button" tabindex="0">Rooms</a>
+        <a href="#" onclick="openLearn(); return false;" role="button" tabindex="0">Learn</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="dashboard" tabindex="0" aria-label="User Profile Section">
+        <h2>👤 Profile</h2>
+        <p><strong>User:</strong> <span id="user"></span></p>
+        <p><strong>Level:</strong> <span id="level">1</span></p>
+        <p><strong>XP:</strong> <span id="xp">0</span>/100</p>
+        <progress 
+          id="xp-bar" 
+          value="0" max="100" 
+          aria-valuemin="0" 
+          aria-valuemax="100" 
+          aria-valuenow="0" 
+          aria-label="Experience progress bar">
+        </progress>
+        <p id="badge">🏅 Rookie</p>
+      </section>
+
+      <section id="battle" style="display:none;" tabindex="0" aria-label="Code Battle Section">
+        <h2>🔥 Code Battle</h2>
+        <div id="challenge-box" aria-live="polite" aria-atomic="true">
+          <h3 id="challenge-title"></h3>
+          <p id="challenge-desc"></p>
+        </div>
+        <textarea id="code-editor" aria-label="Code editor" spellcheck="false"></textarea>
+        <div>
+          <button onclick="submitCode()" type="button">Submit</button>
+          <button onclick="loadChallenge()" type="button">New Challenge</button>
+        </div>
+      </section>
+
+      <section id="leaderboard" style="display:none;" tabindex="0" aria-label="Leaderboard Section">
+        <h2>🏆 Leaderboard</h2>
+        <ul id="leaderboard-list" role="list"></ul>
+      </section>
+
+      <section id="rooms" style="display:none;" tabindex="0" aria-label="Rooms Section">
+        <h2>💬 Rooms</h2>
+
+        <div id="create-room">
+          <input 
+            type="text" 
+            id="new-room-name" 
+            placeholder="Room name" 
+            aria-label="New room name" 
+            required
+          />
+          <textarea 
+            id="new-room-content" 
+            placeholder="Write about programming or tests..." 
+            aria-label="New room description"
+          ></textarea>
+          <button onclick="createRoom()" type="button">Create Room</button>
+        </div>
+
+        <h3>Available Rooms</h3>
+        <ul id="rooms-list" role="list"></ul>
+
+        <div id="room-chat" style="display:none;">
+          <h3 id="room-title"></h3>
+          <div id="room-content" aria-live="polite" aria-atomic="false" tabindex="0"></div>
+          <textarea id="room-message" placeholder="Write something..." aria-label="Write message"></textarea>
+          <div>
+            <button onclick="sendMessage()" type="button">Send</button>
+            <button onclick="leaveRoom()" type="button">Leave Room</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Learn Section -->
+      <section id="learn" style="display:none;" tabindex="0" aria-label="Learn Section">
+        <h2>📚 Learn Section</h2>
+        <div id="lesson-content" tabindex="0" aria-live="polite" aria-atomic="true"></div>
+        
+        <!-- Test Section -->
+        <div id="test-section" aria-live="polite" aria-atomic="true" style="display:none;">
+          <h3 id="test-title"></h3>
+          <div id="test-questions"></div>
+          <button id="submit-test-btn" onclick="submitTest()" type="button" aria-label="Submit Test">Submit Test</button>
+          <div id="test-result" tabindex="0" aria-live="polite" style="margin-top:1em; font-weight:bold;"></div>
+        </div>
+
+        <div style="margin-top: 1em;">
+          <button onclick="prevLesson()" type="button" aria-label="Previous Lesson">Previous</button>
+          <button onclick="nextLesson()" type="button" aria-label="Next Lesson">Next</button>
+          <button onclick="startTest()" type="button" aria-label="Start Test">Start Test</button>
+          <button onclick="showSection('dashboard')" type="button" aria-label="Back to Dashboard">Back to Dashboard</button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 DevArena</p>
+    </footer>
+  </div>
+
+  <script src="challenges.js"></script>
+  <script src="users.js"></script>
+  <script src="script.js"></script>
+
+  <script>
+    // --- Learn Section Data and Logic ---
+
+    // Example expanded lessons array (možeš dodati i do 20+ lekcija)
+    const lessons = [
+      {
+        title: "Introduction to JavaScript",
+        content: "JavaScript is a versatile programming language used primarily for web development. It enables interactive web pages and is an essential part of web applications."
+      },
+      {
+        title: "Variables and Data Types",
+        content: "Variables store data values. In JavaScript, you can declare variables using let, const, or var. Data types include strings, numbers, booleans, arrays, objects, and more."
+      },
+      {
+        title: "Functions",
+        content: "Functions are reusable blocks of code designed to perform a particular task. You define functions with the function keyword or as arrow functions."
+      },
+      {
+        title: "Control Structures",
+        content: "Control structures such as if-else, switch, loops (for, while) control the flow of your program, letting you execute code conditionally or repeatedly."
+      },
+      {
+        title: "DOM Manipulation",
+        content: "The Document Object Model (DOM) represents the page structure. JavaScript can interact with and modify the DOM to dynamically change content, styles, and structure."
+      },
+      // Dodaj ovde još lekcija ako želiš...
+    ];
+
+    // Primer testova vezanih za lekcije
+    const tests = [
+      {
+        title: "JavaScript Basics Test",
+        questions: [
+          {
+            question: "What keyword is used to declare a variable that cannot be reassigned?",
+            options: ["let", "const", "var", "static"],
+            answer: 1
+          },
+          {
+            question: "Which data type represents true/false values?",
+            options: ["String", "Boolean", "Number", "Array"],
+            answer: 1
+          },
+          {
+            question: "What does DOM stand for?",
+            options: [
+              "Document Object Model",
+              "Data Object Model",
+              "Digital Output Management",
+              "Desktop Object Model"
+            ],
+            answer: 0
+          }
+          // Dodaj još pitanja ako želiš
+        ]
+      }
+    ];
+
+    let currentLessonIndex = 0;
+    let testActive = false;
+
+    function openLearn() {
+      showSection('learn');
+      testActive = false;
+      document.getElementById('test-section').style.display = 'none';
+      document.getElementById('lesson-content').style.display = 'block';
+      document.getElementById('test-result').textContent = '';
+      loadLesson(currentLessonIndex);
+    }
+
+    function loadLesson(index) {
+      if (index < 0) index = lessons.length - 1;
+      if (index >= lessons.length) index = 0;
+      currentLessonIndex = index;
+      const lesson = lessons[index];
+      document.getElementById('lesson-content').textContent = lesson.content;
+      document.getElementById('learn').querySelector('h2').textContent = `📚 Learn Section - ${lesson.title}`;
+      // Reset test section
+      document.getElementById('test-section').style.display = 'none';
+      document.getElementById('lesson-content').style.display = 'block';
+      testActive = false;
+      document.getElementById('test-result').textContent = '';
+    }
+
+    function nextLesson() {
+      if (testActive) return;
+      loadLesson(currentLessonIndex + 1);
+    }
+
+    function prevLesson() {
+      if (testActive) return;
+      loadLesson(currentLessonIndex - 1);
+    }
+
+    function startTest() {
+      if (testActive) return;
+      const test = tests[0]; // Za sada samo jedan test za demo
+      document.getElementById('test-title').textContent = test.title;
+      const testQuestionsDiv = document.getElementById('test-questions');
+      testQuestionsDiv.innerHTML = '';
+      test.questions.forEach((q, i) => {
+        const questionBlock = document.createElement('div');
+        questionBlock.className = 'test-question';
+
+        const questionP = document.createElement('p');
+        questionP.textContent = `${i + 1}. ${q.question}`;
+        questionBlock.appendChild(questionP);
+
+        q.options.forEach((opt, idx) => {
+          const optionLabel = document.createElement('label');
+          optionLabel.innerHTML = `
+            <input 
+              type="radio" 
+              name="q${i}" 
+              value="${idx}" 
+              aria-label="${q.options[idx]}"
+              required
+            />
+            ${q.options[idx]}
+          `;
+          questionBlock.appendChild(optionLabel);
+        });
+        testQuestionsDiv.appendChild(questionBlock);
+      });
+      document.getElementById('test-section').style.display = 'block';
+      document.getElementById('lesson-content').style.display = 'none';
+      testActive = true;
+      document.getElementById('test-result').textContent = '';
+      document.getElementById('submit-test-btn').focus();
+    }
+
+    function submitTest() {
+      if (!testActive) return;
+      const test = tests[0];
+      let score = 0;
+      let answeredAll = true;
+
+      for (let i = 0; i < test.questions.length; i++) {
+        const radios = document.getElementsByName(`q${i}`);
+        let selected = null;
+        for (const r of radios) {
+          if (r.checked) {
+            selected = parseInt(r.value, 10);
+            break;
+          }
+        }
+        if (selected === null) {
+          answeredAll = false;
+          break;
+        }
+        if (selected === test.questions[i].answer) {
+          score++;
+        }
+      }
+
+      if (!answeredAll) {
+        alert("Please answer all questions before submitting the test.");
+        return;
+      }
+
+      const resultDiv = document.getElementById('test-result');
+      resultDiv.textContent = `You scored ${score} out of ${test.questions.length}.`;
+
+      testActive = false;
+      document.getElementById('test-section').style.display = 'none';
+      document.getElementById('lesson-content').style.display = 'block';
+      resultDiv.focus();
+    }
+  </script>
+
+</body>
+</html>

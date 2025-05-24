@@ -1,0 +1,28 @@
+{
+  "name": "devarena",
+  "version": "1.0.0",
+  "description": "A modern SPA platform for developers to learn and grow 🚀",
+  "main": "index.js",
+  "scripts": {
+    "start": "live-server ./ --port=8080",
+    "test": "echo \"No tests yet!\" && exit 0",
+    "build": "echo \"Build step (if applicable)\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/devarena.git"
+  },
+  "author": "DevArena Team 👩‍💻👨‍💻",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.1"
+  },
+  "keywords": [
+    "developer",
+    "learning",
+    "SPA",
+    "javascript",
+    "modern",
+    "education"
+  ]
+}
